@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TM Café AI Triage Chatbot - Demo</title>
+<meta name="description" content="AI-powered expert matching chatbot for TM Café emotional support service">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { 
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #f5f5f5;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .app-container {
+    max-width: 390px;
+    margin: 0 auto;
+    height: 100vh;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  }
+  .header {
+    background: linear-gradient(135deg, #E91E63 0%, #C2185B 100%);
+    color: white;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .header-icon {
+    font-size: 24px;
+  }
+  .header-content h1 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .header-content p {
+    font-size: 12px;
+    opacity: 0.9;
+  }
+  .chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    background: #fafafa;
+  }
+  .message {
+    margin-bottom: 16px;
+    display: flex;
+    gap: 8px;
+  }
+  .message.bot {
+    justify-content: flex-start;
+  }
+  .message.user {
+    justify-content: flex-end;
+  }
+  .message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .message.bot .message-avatar {
+    background: linear-gradient(135deg, #E91E63 0%, #C2185B 100%);
+    color: white;
+  }
+  .message.user .message-avatar {
+    background: #e0e0e0;
+    color: #666;
+  }
+  .message-bubble {
+    max-width: 75%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .message.bot .message-bubble {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-bottom-left-radius: 4px;
+  }
+  .message.user .message-bubble {
+    background: #E91E63;
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+  .recommendation-card {
+    background: white;
+    border: 2px solid #E91E63;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 12px;
+  }
+  .recommendation-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .tier-badge {
+    background: #E91E63;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .tier-price {
+    color: #E91E63;
+    font-weight: 600;
+    font-size: 18px;
+  }
+  .expert-section {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+  }
+  .expert-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .expert-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .expert-details h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .expert-stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #666;
+  }
+  .rating {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    color: #FFA726;
+  }
+  .reasoning {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .book-button {
+    width: 100%;
+    background: #E91E63;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .book-button:hover {
+    background: #C2185B;
+    transform: translateY(-1px);
+  }
+  .book-button:active {
+    transform: translateY(0);
+  }
+  .input-area {
+    padding: 12px 16px;
+    background: white;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 8px;
+  }
+  .input-field {
+    flex: 1;
+    padding: 10px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 20px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-field:focus {
+    border-color: #E91E63;
+  }
+  .send-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #E91E63;
+    color: white;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .send-button:hover {
+    background: #C2185B;
+    transform: scale(1.05);
+  }
+  .send-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  .typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 12px 16px;
+  }
+  .typing-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #999;
+    animation: typing 1.4s infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-8px); }
+  }
+  .prompt-toggle {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: #673AB7;
+    color: white;
+    border: none;
+    border-radius: 24px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(103, 58, 183, 0.4);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+  .prompt-toggle:hover {
+    background: #5E35B1;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(103, 58, 183, 0.5);
+  }
+  .prompt-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60vh;
+    background: white;
+    border-top: 2px solid #673AB7;
+    padding: 20px;
+    overflow-y: auto;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+    z-index: 99;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+  }
+  .prompt-panel.open {
+    transform: translateY(0);
+  }
+  .prompt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .prompt-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #673AB7;
+  }
+  .close-prompt {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+  }
+  .prompt-log {
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    border-left: 4px solid #673AB7;
+  }
+  .prompt-log h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #673AB7;
+    margin-bottom: 8px;
+  }
+  .prompt-log pre {
+    font-size: 12px;
+    line-height: 1.6;
+    color: #333;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .success-animation {
+    text-align: center;
+    padding: 20px;
+  }
+  .success-icon {
+    font-size: 48px;
+    color: #4CAF50;
+    margin-bottom: 8px;
+  }
+  .quick-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .quick-option {
+    background: white;
+    border: 1.5px solid #E91E63;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #E91E63;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+  .quick-option:hover {
+    background: #FCE4EC;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+function App() {
+  const [messages, setMessages] = useState([
+    {
+      type: 'bot',
+      content: "Hey! I can see something just happened in your dating life. Want to talk about it? What's going on?",
+      timestamp: new Date()
+    }
+  ]);
+  const [inputValue, setInputValue] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [showPromptLog, setShowPromptLog] = useState(false);
+  const [promptLogs, setPromptLogs] = useState([]);
+  const [conversationState, setConversationState] = useState('initial');
+  const chatAreaRef = useRef(null);
+
+  useEffect(() => {
+    if (chatAreaRef.current) {
+      chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
+    }
+  }, [messages, isTyping]);
+
+  const analyzeUserMessage = (text) => {
+    const lowerText = text.toLowerCase();
+    
+    const needsVenting = lowerText.includes('just need to talk') || 
+                        lowerText.includes('just vent') || 
+                        lowerText.includes('listen') ||
+                        lowerText.includes('sad') ||
+                        lowerText.includes('lonely');
+    
+    const needsAdvice = lowerText.includes('advice') || 
+                       lowerText.includes('what should i') || 
+                       lowerText.includes('help me') ||
+                       lowerText.includes('don\'t know what to do');
+    
+    const needsDeepWork = lowerText.includes('pattern') || 
+                         lowerText.includes('keep happening') || 
+                         lowerText.includes('always') ||
+                         lowerText.includes('therapy');
+    
+    const isUnmatch = lowerText.includes('unmatch') || lowerText.includes('unmatched');
+    const isGhosting = lowerText.includes('ghost') || lowerText.includes('stopped replying');
+    const isBreakup = lowerText.includes('breakup') || lowerText.includes('broke up') || lowerText.includes('ex');
+    const isMarriage = lowerText.includes('marriage') || lowerText.includes('marry') || lowerText.includes('family pressure');
+    const isProfileAnxiety = lowerText.includes('profile') || lowerText.includes('no matches') || lowerText.includes('bio');
+    
+    let tier = 'Quick Advice';
+    let price = 199;
+    let duration = 30;
+    
+    if (needsVenting && !needsAdvice) {
+      tier = 'Just Vent';
+      price = 99;
+      duration = 20;
+    } else if (needsDeepWork || isBreakup) {
+      tier = 'Deep Work';
+      price = 449;
+      duration = 60;
+    } else if (isMarriage) {
+      tier = 'Marriage Compatibility';
+      price = 599;
+      duration = 45;
+    }
+    
+    let expertName = 'Coach Neha';
+    let expertInitials = 'CN';
+    let specialization = 'dating anxiety & rejection';
+    let rating = 4.8;
+    let sessions = 247;
+    
+    if (isBreakup) {
+      expertName = 'Coach Rohan';
+      expertInitials = 'CR';
+      specialization = 'breakup recovery';
+      rating = 4.7;
+      sessions = 183;
+    } else if (isMarriage) {
+      expertName = 'Coach Priya';
+      expertInitials = 'CP';
+      specialization = 'marriage decisions';
+      rating = 4.9;
+      sessions = 156;
+    } else if (isProfileAnxiety) {
+      expertName = 'Coach Arjun';
+      expertInitials = 'CA';
+      specialization = 'profile optimization';
+      rating = 4.6;
+      sessions = 201;
+    }
+    
+    let reasoning = '';
+    if (isUnmatch) {
+      reasoning = `You mentioned getting unmatched—${expertName.split(' ')[1]} specializes in ${specialization} and has helped ${sessions}+ users work through similar situations.`;
+    } else if (isBreakup) {
+      reasoning = `Breakups are tough. ${expertName.split(' ')[1]} focuses on ${specialization} and provides frameworks for healing and moving forward.`;
+    } else if (isMarriage) {
+      reasoning = `Marriage decisions need clarity, not pressure. ${expertName.split(' ')[1]} helps with ${specialization} using evidence-based compatibility frameworks.`;
+    } else if (isProfileAnxiety) {
+      reasoning = `Profile anxiety is common. ${expertName.split(' ')[1]} specializes in ${specialization} and can help you understand what's working and what's not.`;
+    } else {
+      reasoning = `Based on your situation, ${expertName.split(' ')[1]} is a great match. They specialize in ${specialization} and have a proven track record.`;
+    }
+    
+    const prompt = {
+      step: 'Triage Analysis',
+      prompt: `ROLE: You are TM Café's supportive triage assistant.
+
+CONTEXT:
+- User message: "${text}"
+- Trigger detected: ${isUnmatch ? 'Post-unmatch' : isGhosting ? 'Ghosting' : isBreakup ? 'Breakup' : isMarriage ? 'Marriage pressure' : 'General anxiety'}
+- Emotional state: ${needsVenting ? 'Needs empathy' : needsAdvice ? 'Needs guidance' : 'Needs frameworks'}
+
+TASK: Recommend ONE tier and match to best available expert.
+
+ANALYSIS:
+→ Need type: ${needsVenting ? 'Venting' : needsDeepWork ? 'Deep work' : 'Advice'}
+→ Recommended tier: ${tier} (₹${price}, ${duration} min)
+→ Matched expert: ${expertName} (${rating}★, ${sessions} sessions)
+→ Reasoning: ${reasoning}`,
+      output: {
+        tier,
+        price,
+        duration,
+        expert: expertName,
+        expertInitials,
+        specialization,
+        rating,
+        sessions,
+        reasoning
+      }
+    };
+    
+    setPromptLogs(prev => [...prev, prompt]);
+    
+    return {
+      tier,
+      price,
+      duration,
+      expertName,
+      expertInitials,
+      specialization,
+      rating,
+      sessions,
+      reasoning,
+      needsClarification: !isUnmatch && !isGhosting && !isBreakup && !isMarriage && !isProfileAnxiety && lowerText.split(' ').length < 5
+    };
+  };
+
+  const handleSend = () => {
+    if (!inputValue.trim()) return;
+
+    const userMessage = {
+      type: 'user',
+      content: inputValue,
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, userMessage]);
+    setInputValue('');
+    setIsTyping(true);
+
+    setTimeout(() => {
+      const analysis = analyzeUserMessage(inputValue);
+      
+      if (analysis.needsClarification && conversationState === 'initial') {
+        setMessages(prev => [...prev, {
+          type: 'bot',
+          content: "I hear you. Would you rather:",
+          timestamp: new Date(),
+          showOptions: true
+        }]);
+        setConversationState('clarifying');
+      } else {
+        setMessages(prev => [...prev, {
+          type: 'bot',
+          content: "Based on what you shared, here's what I recommend:",
+          timestamp: new Date()
+        }, {
+          type: 'recommendation',
+          data: analysis,
+          timestamp: new Date()
+        }]);
+        setConversationState('recommended');
+      }
+      
+      setIsTyping(false);
+    }, 1500);
+  };
+
+  const handleQuickOption = (option) => {
+    setInputValue(option);
+    setTimeout(() => handleSend(), 100);
+  };
+
+  const handleBooking = () => {
+    setIsTyping(true);
+    setTimeout(() => {
+      setMessages(prev => [...prev, {
+        type: 'bot',
+        content: "Perfect! I've connected you with your expert. They'll be ready in 3 minutes. You'll receive a call notification when the session starts.",
+        timestamp: new Date()
+      }, {
+        type: 'success',
+        timestamp: new Date()
+      }]);
+      setIsTyping(false);
+      setConversationState('booked');
+    }, 1000);
+  };
+
+  return (
+    <div className="app-container">
+      <div className="header">
+        <i className="ti ti-message-circle header-icon"></i>
+        <div className="header-content">
+          <h1>TM Café Triage</h1>
+          <p>Find the right support in seconds</p>
+        </div>
+      </div>
+
+      <div className="chat-area" ref={chatAreaRef}>
+        {messages.map((msg, idx) => {
+          if (msg.type === 'bot') {
+            return (
+              <div key={idx} className="message bot">
+                <div className="message-avatar">☕</div>
+                <div>
+                  <div className="message-bubble">{msg.content}</div>
+                  {msg.showOptions && (
+                    <div className="quick-options">
+                      <div className="quick-option" onClick={() => handleQuickOption("I just need someone to listen and validate my feelings")}>
+                        💬 Just vent and feel heard (₹99, 20min)
+                      </div>
+                      <div className="quick-option" onClick={() => handleQuickOption("I need advice on what to do next")}>
+                        🎯 Get advice and a plan (₹199, 30min)
+                      </div>
+                      <div className="quick-option" onClick={() => handleQuickOption("I want to understand my patterns and do deep work")}>
+                        🔬 Do deep work on patterns (₹449, 60min)
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          } else if (msg.type === 'user') {
+            return (
+              <div key={idx} className="message user">
+                <div className="message-bubble">{msg.content}</div>
+                <div className="message-avatar">👤</div>
+              </div>
+            );
+          } else if (msg.type === 'recommendation') {
+            const { tier, price, duration, expertName, expertInitials, specialization, rating, sessions, reasoning } = msg.data;
+            return (
+              <div key={idx} className="message bot">
+                <div className="message-avatar">☕</div>
+                <div className="recommendation-card">
+                  <div className="recommendation-header">
+                    <div className="tier-badge">{tier}</div>
+                    <div className="tier-price">₹{price}</div>
+                    <span style={{fontSize: '13px', color: '#666'}}>• {duration} min</span>
+                  </div>
+                  
+                  <div className="expert-section">
+                    <div className="expert-info">
+                      <div className="expert-avatar">{expertInitials}</div>
+                      <div className="expert-details">
+                        <h4>{expertName}</h4>
+                        <div className="expert-stats">
+                          <div className="rating">
+                            <i className="ti ti-star-filled"></i> {rating}
+                          </div>
+                          <span>•</span>
+                          <span>{sessions} sessions</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="reasoning">{reasoning}</div>
+                    
+                    <button className="book-button" onClick={handleBooking}>
+                      Book with {expertName.split(' ')[1]} now →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          } else if (msg.type === 'success') {
+            return (
+              <div key={idx} className="message bot">
+                <div className="message-avatar">☕</div>
+                <div className="message-bubble">
+                  <div className="success-animation">
+                    <div className="success-icon">✓</div>
+                    <strong>Booked!</strong>
+                    <p style={{fontSize: '13px', marginTop: '8px', color: '#666'}}>Your expert will call you in 3 minutes</p>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })}
+
+        {isTyping && (
+          <div className="message bot">
+            <div className="message-avatar">☕</div>
+            <div className="message-bubble">
+              <div className="typing-indicator">
+                <div className="typing-dot"></div>
+                <div className="typing-dot"></div>
+                <div className="typing-dot"></div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="input-area">
+        <input
+          type="text"
+          className="input-field"
+          placeholder="Type your situation..."
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+          disabled={conversationState === 'booked'}
+        />
+        <button 
+          className="send-button" 
+          onClick={handleSend}
+          disabled={!inputValue.trim() || conversationState === 'booked'}
+        >
+          <i className="ti ti-send"></i>
+        </button>
+      </div>
+
+      {promptLogs.length > 0 && (
+        <button className="prompt-toggle" onClick={() => setShowPromptLog(!showPromptLog)}>
+          <i className="ti ti-code"></i>
+          View Prompt Log
+        </button>
+      )}
+
+      <div className={`prompt-panel ${showPromptLog ? 'open' : ''}`}>
+        <div className="prompt-header">
+          <h2>🔍 Behind the Scenes: AI Prompts</h2>
+          <button className="close-prompt" onClick={() => setShowPromptLog(false)}>
+            <i className="ti ti-x"></i>
+          </button>
+        </div>
+        
+        {promptLogs.map((log, idx) => (
+          <div key={idx} className="prompt-log">
+            <h3>Step {idx + 1}: {log.step}</h3>
+            <pre>{log.prompt}</pre>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));
+</script>
+</body>
+</html>
