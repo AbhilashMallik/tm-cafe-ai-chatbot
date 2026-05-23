@@ -50,7 +50,7 @@ An intelligent chatbot that:
 
 ## 🚀 **Live Demo**
 
-**👉 [Try the Demo](https://YOUR_USERNAME.github.io/tm-cafe-ai-chatbot/)**
+**👉 [Try the Demo](https://AbhilashMallik.github.io/tm-cafe-ai-chatbot/)**
 
 ### Test Cases to Try:
 
